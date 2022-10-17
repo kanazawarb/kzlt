@@ -105,8 +105,8 @@ function doPost(e) {
       return ContentService.createTextOutput(msg);
     }
     case 'all': {
-      const asheet = spreadsheet.getSheetByName(sheetName);
-      const aentries = asheet.getRange(
+      const sheet = spreadsheet.getSheetByName(sheetName);
+      const entries = sheet.getRange(
         startRowNum,
         startColNum,
         startRowNum + maxRowSize,
@@ -115,17 +115,17 @@ function doPost(e) {
 
       let allText = "";
       for (let i = 0; i < maxRowSize; i++) {
-        if (!aentries[i][index.DATE]) break;
+        if (!entries[i][index.DATE]) break;
 
-        const entry = aentries[i];
+        const entry = entries[i];
         allText += `- ${entry[index.STATUS] === status.ORDERED ? '[done]' : ''} ${entry[index.TITLE]} by ${entry[index.NAME]}\n`;
       }
 
       return ContentService.createTextOutput(allText);
     }
     case 'shuffle': {
-      const ssheet = spreadsheet.getSheetByName(sheetName);
-      const eentries = ssheet.getRange(
+      const sheet = spreadsheet.getSheetByName(sheetName);
+      const entries = sheet.getRange(
         startRowNum,
         startColNum,
         startRowNum + maxRowSize,
@@ -134,21 +134,21 @@ function doPost(e) {
 
       const container = [];
       for (let i = 0; i < maxRowSize; i++) {
-        if (!eentries[i][index.DATE]) break;
-        if (eentries[i][index.STATUS] === status.ORDERED) continue;
+        if (!entries[i][index.DATE]) break;
+        if (entries[i][index.STATUS] === status.ORDERED) continue;
 
-        const entryAry = eentries[i];
-        container.push(entryAry);
+        const entry = entries[i];
+        container.push(entry);
       }
 
       // 並び替え対象としたものに印をつける
-      const vals = [...Array(container.length)].map((_) => [status.ORDERED]);
-      ssheet.getRange(
+      const values = [...Array(container.length)].map((_) => [status.ORDERED]);
+      sheet.getRange(
         startRowNum,
         5,
         container.length,
         1,
-      ).setValues([...vals]);
+      ).setValues([...values]);
 
       // markdown を作り、レスポンスを返す
       const indexes = shuffle(indexesNumbers(container.length));
@@ -157,28 +157,28 @@ function doPost(e) {
         response_type: "in_channel",
         text: mdText,
       };
-      const resp = ContentService.createTextOutput();
-      resp.setMimeType(ContentService.MimeType.JSON);
-      resp.setContent(JSON.stringify(payload));
+      const response = ContentService.createTextOutput();
+      response.setMimeType(ContentService.MimeType.JSON);
+      response.setContent(JSON.stringify(payload));
 
-      return resp;
+      return response;
     }
     case 'reset': {
-      const rsheet = spreadsheet.getSheetByName(sheetName);
-      const rentries = rsheet.getRange(
+      const sheet = spreadsheet.getSheetByName(sheetName);
+      const entries = sheet.getRange(
         startRowNum,
         startColNum,
         startRowNum + maxRowSize,
         4,
         ).getValues();
 
-      let counter = [];
+      let counter = 0;
       for (let i = 0; i < maxRowSize; i++) {
-        if (!rentries[i][index.DATE]) break;
+        if (!entries[i][index.DATE]) break;
         counter++;
       }
       const values = [...Array(counter)].map((_) => [status.UNORDERED]);
-      rsheet.getRange(
+      sheet.getRange(
         startRowNum,
         5,
         counter,
