@@ -38,7 +38,7 @@ function doPost(e) {
   const UNORDERED = 'unordered';
 
   switch(cmd) {
-    case 'create':
+    case 'create': {
       if (spreadsheet.getSheetByName(sheetName)) {
         return ContentService.createTextOutput('既にシートが存在します');
       } else {
@@ -46,7 +46,8 @@ function doPost(e) {
       }
 
       return ContentService.createTextOutput(`シート: ${sheetName} が作成されました`);
-    case 'entry':
+    }
+    case 'entry': {
       const sheet = spreadsheet.getSheetByName(sheetName);
       if (!sheet) {
         return ContentService.createTextOutput('/kzlt create でシートを作成してください');
@@ -78,7 +79,8 @@ function doPost(e) {
       }
 
       return ContentService.createTextOutput("entry がいっぱい！！！！");
-    case 'list':
+    }
+    case 'list': {
       const entrysheet = spreadsheet.getSheetByName(sheetName);
       const entries = entrysheet.getRange(
         startRowNum,
@@ -101,7 +103,8 @@ function doPost(e) {
 
       const msg = entryCount === 0 ? 'エントリーはありません' : text;
       return ContentService.createTextOutput(msg);
-    case 'all':
+    }
+    case 'all': {
       const asheet = spreadsheet.getSheetByName(sheetName);
       const aentries = asheet.getRange(
         startRowNum,
@@ -119,7 +122,8 @@ function doPost(e) {
       }
 
       return ContentService.createTextOutput(allText);
-    case 'shuffle':
+    }
+    case 'shuffle': {
       const ssheet = spreadsheet.getSheetByName(sheetName);
       const eentries = ssheet.getRange(
         startRowNum,
@@ -158,7 +162,8 @@ function doPost(e) {
       resp.setContent(JSON.stringify(payload));
 
       return resp;
-    case 'reset':
+    }
+    case 'reset': {
       const rsheet = spreadsheet.getSheetByName(sheetName);
       const rentries = rsheet.getRange(
         startRowNum,
@@ -181,6 +186,7 @@ function doPost(e) {
       ).setValues([...values]);
 
       return ContentService.createTextOutput("すべてのエントリーを順番決めてない扱いにしました");
+    }
     default:
       return ContentService.createTextOutput(cmd + "\n" + help);
   }
