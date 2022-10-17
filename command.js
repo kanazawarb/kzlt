@@ -34,8 +34,8 @@ function doPost(e) {
   const startRowNum = 2;
   const startColNum = 2;
   const maxRowSize = 100; // TODO: さぽって 100 行に限定してる
-  const ORDERED = 'ordered';
-  const UNORDERED = 'unordered';
+  const status = { ORDERED: 'ordered', UNORDERED: 'unordered' };
+  const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
 
   switch(cmd) {
     case 'create': {
@@ -56,7 +56,7 @@ function doPost(e) {
       const current = new Date().toLocaleString();
       const userName = e.parameter.user_name;
       const title = argText.slice(idx + 1, argText.length).trim();
-      const entryLine = [current, userName, title, UNORDERED];
+      const entryLine = [current, userName, title, status.UNORDERED];
 
       const entryValues = sheet.getRange(
         startRowNum,
@@ -66,7 +66,7 @@ function doPost(e) {
         ).getValues();
 
       for (let row = 0; row < maxRowSize; row++) {
-        if (!entryValues[row][0]) {
+        if (!entryValues[row][index.DATE]) {
           sheet.getRange(
             startRowNum + row,
             startColNum,
@@ -92,11 +92,11 @@ function doPost(e) {
       let text = "現在までのエントリー\n";
       let entryCount = 0;
       for (let i = 0; i < maxRowSize; i++) {
-        if (!entries[i][0]) break;
-        if (entries[i][3] === ORDERED) continue;
+        if (!entries[i][index.DATE]) break;
+        if (entries[i][index.STATUS] === status.ORDERED) continue;
 
-        const name = entries[i][1];
-        const title = entries[i][2];
+        const name = entries[i][index.NAME];
+        const title = entries[i][index.TITLE];
         text += `- ${title} by ${name}\n`;
         entryCount++;
       }
@@ -115,10 +115,10 @@ function doPost(e) {
 
       let allText = "";
       for (let i = 0; i < maxRowSize; i++) {
-        if (!aentries[i][0]) break;
+        if (!aentries[i][index.DATE]) break;
 
         const entry = aentries[i];
-        allText += `- ${entry[3] === ORDERED ? '[done]' : ''} ${entry[2]} by ${entry[1]}\n`;
+        allText += `- ${entry[index.STATUS] === status.ORDERED ? '[done]' : ''} ${entry[index.TITLE]} by ${entry[index.NAME]}\n`;
       }
 
       return ContentService.createTextOutput(allText);
@@ -134,15 +134,15 @@ function doPost(e) {
 
       const container = [];
       for (let i = 0; i < maxRowSize; i++) {
-        if (!eentries[i][0]) break;
-        if (eentries[i][3] === ORDERED) continue;
+        if (!eentries[i][index.DATE]) break;
+        if (eentries[i][index.STATUS] === status.ORDERED) continue;
 
         const entryAry = eentries[i];
         container.push(entryAry);
       }
 
       // 並び替え対象としたものに印をつける
-      const vals = [...Array(container.length)].map((_) => [ORDERED]);
+      const vals = [...Array(container.length)].map((_) => [status.ORDERED]);
       ssheet.getRange(
         startRowNum,
         5,
@@ -174,10 +174,10 @@ function doPost(e) {
 
       let counter = [];
       for (let i = 0; i < maxRowSize; i++) {
-        if (!rentries[i][0]) break;
+        if (!rentries[i][index.DATE]) break;
         counter++;
       }
-      const values = [...Array(counter)].map((_) => [UNORDERED]);
+      const values = [...Array(counter)].map((_) => [status.UNORDERED]);
       rsheet.getRange(
         startRowNum,
         5,
@@ -206,12 +206,13 @@ function indexesNumbers(num = 10) {
 }
 
 function makeMarkdown(container, indexes) {
+  const index = { NAME: 1, TITLE: 2 };
   let mdTable = "```\n"; // | タイトル | 時刻	 | 時間	 | 担当 |
   let mdList = "";
   indexes.forEach((num) => {
     const ary = container[num];
-    mdTable += `| ${ary[2]} | | | ${ary[1]} |\n`;
-    mdList += `- ${ary[2]} by ${ary[1]}\n`;
+    mdTable += `| ${ary[index.TITLE]} | | | ${ary[index.NAME]} |\n`;
+    mdList += `- ${ary[index.TITLE]} by ${ary[index.NAME]}\n`;
   });
   mdTable += "```";
 
