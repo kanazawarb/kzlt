@@ -81,8 +81,12 @@ function doPost(e) {
       return ContentService.createTextOutput("entry がいっぱい！！！！");
     }
     case 'list': {
-      const entrysheet = spreadsheet.getSheetByName(sheetName);
-      const entries = entrysheet.getRange(
+      const sheet = spreadsheet.getSheetByName(sheetName);
+      if (!sheet) {
+        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
+      }
+
+      const entries = sheet.getRange(
         startRowNum,
         startColNum,
         startRowNum + maxRowSize,
@@ -106,6 +110,10 @@ function doPost(e) {
     }
     case 'all': {
       const sheet = spreadsheet.getSheetByName(sheetName);
+      if (!sheet) {
+        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
+      }
+
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -125,6 +133,10 @@ function doPost(e) {
     }
     case 'shuffle': {
       const sheet = spreadsheet.getSheetByName(sheetName);
+      if (!sheet) {
+        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
+      }
+
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -165,6 +177,10 @@ function doPost(e) {
     }
     case 'reset': {
       const sheet = spreadsheet.getSheetByName(sheetName);
+      if (!sheet) {
+        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
+      }
+
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
