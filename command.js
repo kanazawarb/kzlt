@@ -16,6 +16,7 @@ function doPost(e) {
 /kzlt all -- エントリー済みのLTを出力する(順番決めた/決めてない関係なく)
 /kzlt shuffle -- 順番を決める (次のshuffleに出てこない)
 /kzlt reset -- 順番決めたものすべてを順番決めていないことにする
+/kzlt remove 'エントリ番号' -- エントリ時に返ってきた番号を指定してエントリを削除する
 `;
 
   const argText = e.parameter.text;
@@ -117,7 +118,7 @@ function doPost(e) {
       let entryCount = 0;
       for (let i = 0; i < maxRowSize; i++) {
         if (!entries[i][index.DATE]) break;
-        if (entries[i][index.STATUS] === status.ORDERED) continue;
+        if (entries[i][index.STATUS] !== status.UNORDERED) continue;
 
         const name = entries[i][index.NAME];
         const title = entries[i][index.TITLE];
@@ -144,6 +145,7 @@ function doPost(e) {
       let allText = "";
       for (let i = 0; i < maxRowSize; i++) {
         if (!entries[i][index.DATE]) break;
+        if (entries[i][index.STATUS] === status.REMOVED) continue
 
         const entry = entries[i];
         allText += `- ${entry[index.STATUS] === status.ORDERED ? '[done]' : ''} ${entry[index.TITLE]} by ${entry[index.NAME]}\n`;
@@ -167,14 +169,13 @@ function doPost(e) {
       const container = [];
       for (let i = 0; i < maxRowSize; i++) {
         if (!entries[i][index.DATE]) break;
-        if (entries[i][index.STATUS] === status.ORDERED) continue;
 
         const entry = entries[i];
         container.push(entry);
       }
 
       // 並び替え対象としたものに印をつける
-      const values = [...Array(container.length)].map((_) => [status.ORDERED]);
+      const values = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.ORDERED]);
       sheet.getRange(
         startRowNum,
         5,
@@ -184,7 +185,7 @@ function doPost(e) {
 
       // markdown を作り、レスポンスを返す
       const indexes = shuffle(indexesNumbers(container.length));
-      const mdText = makeMarkdown(container, indexes);
+      const mdText = makeMarkdown(container, indexes, status, index);
       const payload = {
         response_type: "in_channel",
         text: mdText,
@@ -208,16 +209,17 @@ function doPost(e) {
         4,
         ).getValues();
 
-      let counter = 0;
+      const container = [];
       for (let i = 0; i < maxRowSize; i++) {
         if (!entries[i][index.DATE]) break;
-        counter++;
+
+        container.push(entries[i]);
       }
-      const values = [...Array(counter)].map((_) => [status.UNORDERED]);
+      const values = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.UNORDERED]);
       sheet.getRange(
         startRowNum,
         5,
-        counter,
+        container.length,
         1,
       ).setValues([...values]);
 
@@ -241,15 +243,17 @@ function indexesNumbers(num = 10) {
   return shuffle(nums);
 }
 
-function makeMarkdown(container, indexes) {
-  const index = { NAME: 1, TITLE: 2 };
+function makeMarkdown(container, orderNumbers, status, index) {
   let mdTable = "```\n"; // | タイトル | 時刻	 | 時間	 | 担当 |
   let mdList = "";
-  indexes.forEach((num) => {
+  for (const num of orderNumbers) {
     const ary = container[num];
+
+    if (ary[index.STATUS] === status.REMOVED) continue;
+
     mdTable += `| ${ary[index.TITLE]} | | | ${ary[index.NAME]} |\n`;
     mdList += `- ${ary[index.TITLE]} by ${ary[index.NAME]}\n`;
-  });
+  };
   mdTable += "```";
 
   return mdList + "\n" + mdTable;
