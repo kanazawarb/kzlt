@@ -34,7 +34,7 @@ function doPost(e) {
   const startRowNum = 2;
   const startColNum = 2;
   const maxRowSize = 100; // TODO: さぽって 100 行に限定してる
-  const status = { ORDERED: 'ordered', UNORDERED: 'unordered' };
+  const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed' };
   const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
 
   switch(cmd) {
@@ -74,11 +74,31 @@ function doPost(e) {
             entryLine.length,
             ).setValues([entryLine]);
 
-          return ContentService.createTextOutput(`title: ${title} を受け付けました`);
+          return ContentService.createTextOutput(`title: ${title} を受け付けました。entryId: ${startRowNum + row}`);
         }
       }
 
       return ContentService.createTextOutput("entry がいっぱい！！！！");
+    }
+    case 'remove': {
+      const sheet = spreadsheet.getSheetByName(sheetName);
+      if (!sheet) {
+        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
+      }
+
+      const value = argText.slice(idx + 1, argText.length).trim();
+      if (Number(value) === 0 || Number.isNaN === Number(value) || typeof(Number(value)) !== 'number') {
+        return ContentService.createTextOutput('entry 時に返ってきた entryId を指定してください /kzlt remove 1');
+      }
+
+      const targetRowNum = Number(value);
+      const entry = sheet.getRange(targetRowNum, startColNum, 1, 4).getValues()[0];
+      if (entry[index.NAME] !== e.parameter.user_name) {
+        return ContentService.createTextOutput(`entry が自身のものではありません。 ${entry[index.NAME]}`);
+      }
+
+      sheet.getRange(targetRowNum, startColNum + 3).setValue(status.REMOVED);
+      return ContentService.createTextOutput(`entryId: ${value}, title: ${entry[index.TITLE]} を削除しました`);
     }
     case 'list': {
       const sheet = spreadsheet.getSheetByName(sheetName);
