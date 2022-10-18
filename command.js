@@ -122,7 +122,7 @@ function doPost(e) {
 
         const name = entries[i][index.NAME];
         const title = entries[i][index.TITLE];
-        text += `- ${title} by ${name}\n`;
+        text += `- ${title} by ${name}, entryId: ${startRowNum + i}\n`;
         entryCount++;
       }
 
@@ -148,7 +148,8 @@ function doPost(e) {
         if (entries[i][index.STATUS] === status.REMOVED) continue
 
         const entry = entries[i];
-        allText += `- ${entry[index.STATUS] === status.ORDERED ? '[done]' : ''} ${entry[index.TITLE]} by ${entry[index.NAME]}\n`;
+        const badge = entry[index.STATUS] === status.ORDERED ? '[done]' : '';
+        allText += `- ${badge} ${entry[index.TITLE]} by ${entry[index.NAME]}, entryId: ${startRowNum + i}\n`;
       }
 
       return ContentService.createTextOutput(allText);
