@@ -185,8 +185,7 @@ function doPost(e) {
       ).setValues([...values]);
 
       // markdown を作り、レスポンスを返す
-      const indexes = shuffle(indexesNumbers(container.length));
-      const mdText = makeMarkdown(container, indexes, status, index);
+      const mdText = makeMarkdown(container, status, index);
       const payload = {
         response_type: "in_channel",
         text: mdText,
@@ -244,7 +243,9 @@ function indexesNumbers(num = 10) {
   return shuffle(nums);
 }
 
-function makeMarkdown(container, orderNumbers, status, index) {
+function makeMarkdown(container, status, index) {
+  const orderNumbers= indexesNumbers(container.length);
+
   let mdTable = "```\n"; // | タイトル | 時刻	 | 時間	 | 担当 |
   let mdList = "";
   for (const num of orderNumbers) {
