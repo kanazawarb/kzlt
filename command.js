@@ -126,8 +126,19 @@ function doPost(e) {
         entryCount++;
       }
 
-      const msg = entryCount === 0 ? 'エントリーはありません' : text;
-      return ContentService.createTextOutput(msg);
+      if (entryCount === 0) {
+        return ContentService.createTextOutput('エントリーはありません');
+      } else {
+        const payload = {
+          response_type: "in_channel",
+          text: text,
+        };
+        const response = ContentService.createTextOutput();
+        response.setMimeType(ContentService.MimeType.JSON);
+        response.setContent(JSON.stringify(payload));
+
+        return response;
+      }
     }
     case 'all': {
       const sheet = spreadsheet.getSheetByName(sheetName);
