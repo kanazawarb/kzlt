@@ -79,7 +79,7 @@ function doPost(e) {
         }
       }
 
-      return ContentService.createTextOutput("entry がいっぱい！！！！");
+      return ContentService.createTextOutput("満席です。");
     }
     case 'remove': {
       const sheet = spreadsheet.getSheetByName(sheetName);
