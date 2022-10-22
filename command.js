@@ -12,9 +12,9 @@ function doPost(e) {
   const help = `
 /kzlt create -- 今回のLT大会用の枠を作成する
 /kzlt entry 'LTタイトル' -- 自分のLTを登録する
-/kzlt list  -- エントリー済みのLTを出力する(順番を決めたものを除く)
+/kzlt list  -- エントリー済みのLTをchannelに出力する(順番を決めたものを除く)
 /kzlt all -- エントリー済みのLTを出力する(順番決めた/決めてない関係なく)
-/kzlt shuffle -- 順番を決める (次のshuffleに出てこない)
+/kzlt shuffle -- 順番を決め、channelに出力する (次のshuffleに出てこない)
 /kzlt reset -- 順番決めたものすべてを順番決めていないことにする
 /kzlt remove 'エントリ番号' -- エントリ時に返ってきた番号を指定してエントリを削除する
 `;

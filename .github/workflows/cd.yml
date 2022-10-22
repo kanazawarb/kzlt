@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: 16
 
-      - name: Install clasp
+      - name: Install Clasp
         run: |
           npm init -y
           npm install -g @google/clasp
@@ -64,6 +64,6 @@ jobs:
         run: |
           clasp push -f
 
-      - name: Deploy
+      - name: Deploy # deploymentIdを指定する == 公開URLがかわらない
         run: |
           clasp deploy --deploymentId $DEPLOYMENT_ID
