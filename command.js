@@ -62,7 +62,7 @@ function doPost(e) {
       const entryValues = sheet.getRange(
         startRowNum,
         startColNum,
-        startRowNum + maxRowSize,
+        maxRowSize,
         entryLine.length,
         ).getValues();
 
@@ -110,7 +110,7 @@ function doPost(e) {
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
-        startRowNum + maxRowSize,
+        maxRowSize,
         4,
         ).getValues();
 
@@ -149,7 +149,7 @@ function doPost(e) {
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
-        startRowNum + maxRowSize,
+        maxRowSize,
         4,
         ).getValues();
 
@@ -174,7 +174,7 @@ function doPost(e) {
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
-        startRowNum + maxRowSize,
+        maxRowSize,
         4,
         ).getValues();
 
