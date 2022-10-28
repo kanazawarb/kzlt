@@ -22,6 +22,7 @@ jobs:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
       DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }}
+      SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
 
     steps:
       - name: Checkout main
@@ -58,6 +59,12 @@ jobs:
               },
               "isLocalCreds":false
             }
+          EOS
+
+      - name: Create .clasp.json
+        run: |
+          cat << EOS > .clasp.json
+            {"scriptId":"$SCRIPT_ID","rootDir":"../kzlt"}
           EOS
 
       - name: Push
