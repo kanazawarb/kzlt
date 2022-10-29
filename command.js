@@ -12,7 +12,7 @@ function doPost(e) {
   const help = `
 /kzlt create -- 今回のLT大会用の枠を作成する
 /kzlt entry 'LTタイトル' -- 自分のLTを登録する
-/kzlt my -- 自分のエントリしたLTを表示する
+/kzlt my -- 自分のエントリしたLTを自分にだけ表示する
 /kzlt list  -- エントリー済みのLTをchannelに出力する(順番を決めたものを除く)
 /kzlt all -- エントリー済みのLTを出力する(順番決めた/決めてない関係なく)
 /kzlt shuffle -- 順番を決め、channelに出力する (次のshuffleに出てこない)
