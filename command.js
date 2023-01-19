@@ -39,7 +39,7 @@ function doPost(e) {
   const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed' };
   const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
 
-  switch(cmd) {
+  switch (cmd) {
     case 'create': {
       if (spreadsheet.getSheetByName(sheetName)) {
         return ContentService.createTextOutput('既にシートが存在します');
@@ -65,7 +65,7 @@ function doPost(e) {
         startColNum,
         maxRowSize,
         entryLine.length,
-        ).getValues();
+      ).getValues();
 
       for (let row = 0; row < maxRowSize; row++) {
         if (!entryValues[row][index.DATE]) {
@@ -74,7 +74,7 @@ function doPost(e) {
             startColNum,
             1,
             entryLine.length,
-            ).setValues([entryLine]);
+          ).setValues([entryLine]);
 
           return ContentService.createTextOutput(`title: ${title} を受け付けました。entryId: ${startRowNum + row}`);
         }
@@ -89,7 +89,7 @@ function doPost(e) {
       }
 
       const value = argText.slice(idx + 1, argText.length).trim();
-      if (Number(value) === 0 || Number.isNaN === Number(value) || typeof(Number(value)) !== 'number') {
+      if (Number(value) === 0 || Number.isNaN === Number(value) || typeof (Number(value)) !== 'number') {
         return ContentService.createTextOutput('entry 時に返ってきた entryId を指定してください /kzlt remove 1');
       }
 
@@ -113,7 +113,7 @@ function doPost(e) {
         startColNum,
         maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       const userName = e.parameter.user_name;
       let text = `${userName}のエントリー\n`;
@@ -146,7 +146,7 @@ function doPost(e) {
         startColNum,
         maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       let text = "現在までのエントリー\n";
       let entryCount = 0;
@@ -185,7 +185,7 @@ function doPost(e) {
         startColNum,
         maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       let allText = "";
       for (let i = 0; i < maxRowSize; i++) {
@@ -210,7 +210,7 @@ function doPost(e) {
         startColNum,
         maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       const container = [];
       for (let i = 0; i < maxRowSize; i++) {
@@ -252,7 +252,7 @@ function doPost(e) {
         startColNum,
         startRowNum + maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       const container = [];
       for (let i = 0; i < maxRowSize; i++) {
@@ -289,7 +289,7 @@ function indexesNumbers(num = 10) {
 }
 
 function makeMarkdown(container, status, index) {
-  const orderNumbers= indexesNumbers(container.length);
+  const orderNumbers = indexesNumbers(container.length);
 
   let mdTable = "```\n"; // | タイトル | 時刻	 | 時間	 | 担当 |
   let mdList = "";
