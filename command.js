@@ -67,11 +67,15 @@ function doPost(e) {
             entryLine.length,
           ).setValues([entryLine]);
 
-          return ContentService.createTextOutput(`title: ${title} を受け付けました。entryId: ${startRowNum + row}`);
+          const payload = {
+            response_type: "in_channel",
+            text: `${userName} さんから LT: 「${title}」のエントリがありました。entryId: ${startRowNum + row}`,
+          };
+          return createPublicTextOutput(payload);
         }
-      }
 
-      return ContentService.createTextOutput("満席です。");
+        return ContentService.createTextOutput("満席です。");
+      }
     }
     case 'remove': {
       const value = argText.slice(idx + 1, argText.length).trim();
@@ -143,11 +147,7 @@ function doPost(e) {
           response_type: "in_channel",
           text: text,
         };
-        const response = ContentService.createTextOutput();
-        response.setMimeType(ContentService.MimeType.JSON);
-        response.setContent(JSON.stringify(payload));
-
-        return response;
+        return createPublicTextOutput(payload);
       }
     }
     case 'all': {
@@ -197,15 +197,12 @@ function doPost(e) {
 
       // markdown を作り、レスポンスを返す
       const mdText = makeMarkdown(container, status, index);
+
       const payload = {
         response_type: "in_channel",
         text: mdText,
       };
-      const response = ContentService.createTextOutput();
-      response.setMimeType(ContentService.MimeType.JSON);
-      response.setContent(JSON.stringify(payload));
-
-      return response;
+      return createPublicTextOutput(payload);
     }
     case 'reset': {
       const entries = sheet.getRange(
@@ -265,4 +262,12 @@ function makeMarkdown(container, status, index) {
   mdTable += "```";
 
   return mdList + "\n" + mdTable;
+}
+
+function createPublicTextOutput(payload) {
+  const response = ContentService.createTextOutput();
+  response.setMimeType(ContentService.MimeType.JSON);
+  response.setContent(JSON.stringify(payload));
+
+  return response;
 }
