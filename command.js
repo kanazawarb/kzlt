@@ -192,13 +192,13 @@ function doPost(e) {
       }
 
       // 並び替え対象としたものに印をつける
-      const values = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.ORDERED]);
+      const statuses = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.ORDERED]);
       sheet.getRange(
         startRowNum,
         5,
         container.length,
         1,
-      ).setValues([...values]);
+      ).setValues([...statuses]);
 
       // markdown を作り、レスポンスを返す
       const mdText = makeMarkdown(container, status, index);
