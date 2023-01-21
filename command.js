@@ -72,9 +72,8 @@ function doPost(e) {
           );
           return createPublicTextOutput(payload);
         }
-
-        return ContentService.createTextOutput("満席です。");
       }
+      return ContentService.createTextOutput("満席です。");
     }
     case 'remove': {
       const entryId = argText.slice(idx + 1, argText.length).trim();
