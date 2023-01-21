@@ -10,7 +10,6 @@ function doPost(e) {
   }
 
   const help = `
-/kzlt create -- 今回のLT大会用の枠を作成する
 /kzlt entry 'LTタイトル' -- 自分のLTを登録する
 /kzlt my -- 自分のエントリしたLTを自分にだけ表示する
 /kzlt list  -- エントリー済みのLTをchannelに出力する(順番を決めたものを除く)
@@ -39,22 +38,14 @@ function doPost(e) {
   const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed' };
   const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
 
-  switch(cmd) {
-    case 'create': {
-      if (spreadsheet.getSheetByName(sheetName)) {
-        return ContentService.createTextOutput('既にシートが存在します');
-      } else {
-        spreadsheet.insertSheet(sheetName);
-      }
+  // なければ sheet を作る
+  const sheet = function(name) {
+    const targetSheet = spreadsheet.getSheetByName(name);
+    return targetSheet ? targetSheet : spreadsheet.insertSheet(name);
+  }(sheetName);
 
-      return ContentService.createTextOutput(`シート: ${sheetName} が作成されました`);
-    }
+  switch (cmd) {
     case 'entry': {
-      const sheet = spreadsheet.getSheetByName(sheetName);
-      if (!sheet) {
-        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
-      }
-
       const current = new Date().toLocaleString();
       const userName = e.parameter.user_name;
       const title = argText.slice(idx + 1, argText.length).trim();
@@ -65,7 +56,7 @@ function doPost(e) {
         startColNum,
         maxRowSize,
         entryLine.length,
-        ).getValues();
+      ).getValues();
 
       for (let row = 0; row < maxRowSize; row++) {
         if (!entryValues[row][index.DATE]) {
@@ -74,7 +65,7 @@ function doPost(e) {
             startColNum,
             1,
             entryLine.length,
-            ).setValues([entryLine]);
+          ).setValues([entryLine]);
 
           return ContentService.createTextOutput(`title: ${title} を受け付けました。entryId: ${startRowNum + row}`);
         }
@@ -83,13 +74,8 @@ function doPost(e) {
       return ContentService.createTextOutput("満席です。");
     }
     case 'remove': {
-      const sheet = spreadsheet.getSheetByName(sheetName);
-      if (!sheet) {
-        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
-      }
-
       const value = argText.slice(idx + 1, argText.length).trim();
-      if (Number(value) === 0 || Number.isNaN === Number(value) || typeof(Number(value)) !== 'number') {
+      if (Number(value) === 0 || Number.isNaN === Number(value) || typeof (Number(value)) !== 'number') {
         return ContentService.createTextOutput('entry 時に返ってきた entryId を指定してください /kzlt remove 1');
       }
 
@@ -103,17 +89,12 @@ function doPost(e) {
       return ContentService.createTextOutput(`entryId: ${value}, title: ${entry[index.TITLE]} を削除しました`);
     }
     case 'my': {
-      const sheet = spreadsheet.getSheetByName(sheetName);
-      if (!sheet) {
-        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
-      }
-
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
         maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       const userName = e.parameter.user_name;
       let text = `${userName}のエントリー\n`;
@@ -136,17 +117,12 @@ function doPost(e) {
     }
 
     case 'list': {
-      const sheet = spreadsheet.getSheetByName(sheetName);
-      if (!sheet) {
-        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
-      }
-
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
         maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       let text = "現在までのエントリー\n";
       let entryCount = 0;
@@ -175,17 +151,12 @@ function doPost(e) {
       }
     }
     case 'all': {
-      const sheet = spreadsheet.getSheetByName(sheetName);
-      if (!sheet) {
-        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
-      }
-
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
         maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       let allText = "";
       for (let i = 0; i < maxRowSize; i++) {
@@ -200,17 +171,12 @@ function doPost(e) {
       return ContentService.createTextOutput(allText);
     }
     case 'shuffle': {
-      const sheet = spreadsheet.getSheetByName(sheetName);
-      if (!sheet) {
-        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
-      }
-
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
         maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       const container = [];
       for (let i = 0; i < maxRowSize; i++) {
@@ -242,17 +208,12 @@ function doPost(e) {
       return response;
     }
     case 'reset': {
-      const sheet = spreadsheet.getSheetByName(sheetName);
-      if (!sheet) {
-        return ContentService.createTextOutput('/kzlt create でシートを作成してください');
-      }
-
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
         startRowNum + maxRowSize,
         4,
-        ).getValues();
+      ).getValues();
 
       const container = [];
       for (let i = 0; i < maxRowSize; i++) {
@@ -289,7 +250,7 @@ function indexesNumbers(num = 10) {
 }
 
 function makeMarkdown(container, status, index) {
-  const orderNumbers= indexesNumbers(container.length);
+  const orderNumbers = indexesNumbers(container.length);
 
   let mdTable = "```\n"; // | タイトル | 時刻	 | 時間	 | 担当 |
   let mdList = "";
