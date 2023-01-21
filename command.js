@@ -39,6 +39,8 @@ function doPost(e) {
   const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
   const messages = {
     no_entry: "エントリーはありません",
+    reset_order: "すべてのエントリーを順番を決めてない状態に戻しました",
+    full_entry: "満席です",
   }
 
   // なければ sheet を作る
@@ -76,7 +78,7 @@ function doPost(e) {
           return createPublicTextOutput(payload);
         }
       }
-      return ContentService.createTextOutput("満席です。");
+      return ContentService.createTextOutput(messages.full_entry);
     }
     case 'remove': {
       const entryId = argText.slice(idx + 1, argText.length).trim();
@@ -233,7 +235,7 @@ function doPost(e) {
         1,
       ).setValues([...values]);
 
-      return ContentService.createTextOutput("すべてのエントリーを順番決めてない扱いにしました");
+      return ContentService.createTextOutput(messages.reset_order);
     }
     default:
       return ContentService.createTextOutput(cmd + "\n" + help);
