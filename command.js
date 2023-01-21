@@ -67,26 +67,35 @@ function doPost(e) {
             entryLine.length,
           ).setValues([entryLine]);
 
-          return ContentService.createTextOutput(`title: ${title} を受け付けました。entryId: ${startRowNum + row}`);
+          const payload = {
+            response_type: "in_channel",
+            text: `${userName} さんから LT: 「${title}」のエントリがありました。entryId: ${startRowNum + row}`,
+          };
+          return createPublicTextOutput(payload);
         }
-      }
 
-      return ContentService.createTextOutput("満席です。");
+        return ContentService.createTextOutput("満席です。");
+      }
     }
     case 'remove': {
-      const value = argText.slice(idx + 1, argText.length).trim();
-      if (Number(value) === 0 || Number.isNaN === Number(value) || typeof (Number(value)) !== 'number') {
+      const entryId = argText.slice(idx + 1, argText.length).trim();
+      if (Number(entryId) === 0 || Number.isNaN === Number(entryId) || typeof (Number(entryId)) !== 'number') {
         return ContentService.createTextOutput('entry 時に返ってきた entryId を指定してください /kzlt remove 1');
       }
 
-      const targetRowNum = Number(value);
+      const targetRowNum = Number(entryId);
       const entry = sheet.getRange(targetRowNum, startColNum, 1, 4).getValues()[0];
       if (entry[index.NAME] !== e.parameter.user_name) {
         return ContentService.createTextOutput(`entry が自身のものではありません。 ${entry[index.NAME]}`);
       }
 
-      sheet.getRange(targetRowNum, startColNum + 3).setValue(status.REMOVED);
-      return ContentService.createTextOutput(`entryId: ${value}, title: ${entry[index.TITLE]} を削除しました`);
+      sheet.getRange(targetRowNum, startColNum + index.STATUS).setValue(status.REMOVED);
+
+      const payload = {
+        response_type: "in_channel",
+        text: `LT title: ${entry[index.TITLE]} のエントリが取り消されました。`
+      };
+      return createPublicTextOutput(payload);
     }
     case 'my': {
       const entries = sheet.getRange(
@@ -143,11 +152,7 @@ function doPost(e) {
           response_type: "in_channel",
           text: text,
         };
-        const response = ContentService.createTextOutput();
-        response.setMimeType(ContentService.MimeType.JSON);
-        response.setContent(JSON.stringify(payload));
-
-        return response;
+        return createPublicTextOutput(payload);
       }
     }
     case 'all': {
@@ -187,25 +192,22 @@ function doPost(e) {
       }
 
       // 並び替え対象としたものに印をつける
-      const values = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.ORDERED]);
+      const statuses = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.ORDERED]);
       sheet.getRange(
         startRowNum,
         5,
         container.length,
         1,
-      ).setValues([...values]);
+      ).setValues([...statuses]);
 
       // markdown を作り、レスポンスを返す
       const mdText = makeMarkdown(container, status, index);
+
       const payload = {
         response_type: "in_channel",
         text: mdText,
       };
-      const response = ContentService.createTextOutput();
-      response.setMimeType(ContentService.MimeType.JSON);
-      response.setContent(JSON.stringify(payload));
-
-      return response;
+      return createPublicTextOutput(payload);
     }
     case 'reset': {
       const entries = sheet.getRange(
@@ -265,4 +267,12 @@ function makeMarkdown(container, status, index) {
   mdTable += "```";
 
   return mdList + "\n" + mdTable;
+}
+
+function createPublicTextOutput(payload) {
+  const response = ContentService.createTextOutput();
+  response.setMimeType(ContentService.MimeType.JSON);
+  response.setContent(JSON.stringify(payload));
+
+  return response;
 }
