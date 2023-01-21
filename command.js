@@ -37,6 +37,9 @@ function doPost(e) {
   const maxRowSize = 100; // TODO: さぽって 100 行に限定してる
   const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed' };
   const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
+  const messages = {
+    no_entry: "エントリーはありません",
+  }
 
   // なければ sheet を作る
   const sheet = function(name) {
@@ -117,7 +120,7 @@ function doPost(e) {
       }
 
       if (entryCount === 0) {
-        return ContentService.createTextOutput('エントリーはありません');
+        return ContentService.createTextOutput(messages.no_entry);
       } else {
         return ContentService.createTextOutput(text);
       }
@@ -144,7 +147,7 @@ function doPost(e) {
       }
 
       if (entryCount === 0) {
-        return ContentService.createTextOutput('エントリーはありません');
+        return ContentService.createTextOutput(messages.no_entry);
       } else {
         const payload = createMessagePayload(text);
 
@@ -169,6 +172,8 @@ function doPost(e) {
         allText += `- ${badge} ${entry[index.TITLE]} by ${entry[index.NAME]}, entryId: ${startRowNum + i}\n`;
       }
 
+      if (!allText) allText = messages.no_entry;
+
       return ContentService.createTextOutput(allText);
     }
     case 'shuffle': {
@@ -185,6 +190,10 @@ function doPost(e) {
 
         const entry = entries[i];
         container.push(entry);
+      }
+
+      if (container.length === 0) {
+        return createPublicTextOutput(createMessagePayload(messages.no_entry));
       }
 
       // 並び替え対象としたものに印をつける
