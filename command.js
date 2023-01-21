@@ -67,10 +67,9 @@ function doPost(e) {
             entryLine.length,
           ).setValues([entryLine]);
 
-          const payload = {
-            response_type: "in_channel",
-            text: `${userName} さんから LT: 「${title}」のエントリがありました。entryId: ${startRowNum + row}`,
-          };
+          const payload = createMessagePayload(
+            `${userName} さんから LT: 「${title}」のエントリがありました。entryId: ${startRowNum + row}`
+          );
           return createPublicTextOutput(payload);
         }
 
@@ -91,10 +90,9 @@ function doPost(e) {
 
       sheet.getRange(targetRowNum, startColNum + index.STATUS).setValue(status.REMOVED);
 
-      const payload = {
-        response_type: "in_channel",
-        text: `LT title: ${entry[index.TITLE]} のエントリが取り消されました。`
-      };
+      const payload = createMessagePayload(
+        `LT title: ${entry[index.TITLE]} のエントリが取り消されました。`
+      );
       return createPublicTextOutput(payload);
     }
     case 'my': {
@@ -148,10 +146,8 @@ function doPost(e) {
       if (entryCount === 0) {
         return ContentService.createTextOutput('エントリーはありません');
       } else {
-        const payload = {
-          response_type: "in_channel",
-          text: text,
-        };
+        const payload = createMessagePayload(text);
+
         return createPublicTextOutput(payload);
       }
     }
@@ -203,10 +199,7 @@ function doPost(e) {
       // markdown を作り、レスポンスを返す
       const mdText = makeMarkdown(container, status, index);
 
-      const payload = {
-        response_type: "in_channel",
-        text: mdText,
-      };
+      const payload = createMessagePayload(mdText);
       return createPublicTextOutput(payload);
     }
     case 'reset': {
@@ -275,4 +268,13 @@ function createPublicTextOutput(payload) {
   response.setContent(JSON.stringify(payload));
 
   return response;
+}
+
+function createMessagePayload(text) {
+  return {
+    response_type: "in_channel",
+    text: text,
+    username: "kzrb",
+    icon_url: "https://meetup.kzrb.org/images/logo_kzrb.png"
+  }
 }
