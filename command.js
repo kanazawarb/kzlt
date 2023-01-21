@@ -109,6 +109,7 @@ function doPost(e) {
         if (!entries[i][index.DATE]) break;
 
         if (entries[i][index.NAME] !== userName) continue;
+        if (entries[i][index.STATUS] === status.REMOVED) continue;
 
         const title = entries[i][index.TITLE];
         text += `- ${title}, entryId: ${startRowNum + i}\n`;
