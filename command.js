@@ -17,6 +17,8 @@ function doPost(e) {
 /kzlt shuffle -- 順番を決め、channelに出力する (次のshuffleに出てこない)
 /kzlt reset -- 順番決めたものすべてを順番決めていないことにする
 /kzlt remove 'エントリ番号' -- エントリ時に返ってきた番号を指定してエントリを削除する
+/kzlt delimit -- 一旦区切ってすでに順番を決めたエントリをshuffle対象外とする
+※ delimit 後に shuffle することで、前回 shuffle 後にエントリしたものだけで shuffle できます
 `;
 
   const argText = e.parameter.text;
@@ -35,12 +37,13 @@ function doPost(e) {
   const startRowNum = 2;
   const startColNum = 2;
   const maxRowSize = 100; // TODO: さぽって 100 行に限定してる
-  const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed' };
+  const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed', DELIMITED: 'delimited' };
   const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
   const messages = {
     no_entry: "エントリーはありません",
     reset_order: "すべてのエントリーを順番を決めてない状態に戻しました",
     full_entry: "満席です",
+    delimit_time: "ここまで順番を決めたエントリは発表済みとみなします"
   }
 
   // なければ sheet を作る
@@ -50,7 +53,7 @@ function doPost(e) {
   }(sheetName);
 
   switch (cmd) {
-    case 'entry': {
+    case 'entry': { // エントリする
       const current = new Date().toLocaleString();
       const userName = e.parameter.user_name;
       const title = argText.slice(idx + 1, argText.length).trim();
@@ -80,7 +83,7 @@ function doPost(e) {
       }
       return ContentService.createTextOutput(messages.full_entry);
     }
-    case 'remove': {
+    case 'remove': { // 番号指定でエントリを削除扱いにする
       const entryId = argText.slice(idx + 1, argText.length).trim();
       if (Number(entryId) === 0 || Number.isNaN === Number(entryId) || typeof (Number(entryId)) !== 'number') {
         return ContentService.createTextOutput('entry 時に返ってきた entryId を指定してください /kzlt remove 1');
@@ -99,7 +102,7 @@ function doPost(e) {
       );
       return createPublicTextOutput(payload);
     }
-    case 'my': {
+    case 'my': { // 自分がエントリしたものを出力する
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -128,7 +131,7 @@ function doPost(e) {
       }
     }
 
-    case 'list': {
+    case 'list': { // shuffle されていないエントリを出力する
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -141,6 +144,7 @@ function doPost(e) {
       for (let i = 0; i < maxRowSize; i++) {
         if (!entries[i][index.DATE]) break;
         if (entries[i][index.STATUS] !== status.UNORDERED) continue;
+        if (entries[i][index.STATUS] !== status.DELIMITED) continue;
 
         const name = entries[i][index.NAME];
         const title = entries[i][index.TITLE];
@@ -156,7 +160,7 @@ function doPost(e) {
         return createPublicTextOutput(payload);
       }
     }
-    case 'all': {
+    case 'all': { // 削除扱いのエントリ以外すべてを出力する
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -170,7 +174,7 @@ function doPost(e) {
         if (entries[i][index.STATUS] === status.REMOVED) continue
 
         const entry = entries[i];
-        const badge = entry[index.STATUS] === status.ORDERED ? '[done]' : '';
+        const badge = (entry[index.STATUS] === status.ORDERED || entry[index.STATUS] === status.DELIMITED) ? '[done]' : '';
         allText += `- ${badge} ${entry[index.TITLE]} by ${entry[index.NAME]}, entryId: ${startRowNum + i}\n`;
       }
 
@@ -178,7 +182,7 @@ function doPost(e) {
 
       return ContentService.createTextOutput(allText);
     }
-    case 'shuffle': {
+    case 'shuffle': { // shuffle されていないエントリをシャッフルする
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -199,7 +203,19 @@ function doPost(e) {
       }
 
       // 並び替え対象としたものに印をつける
-      const statuses = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.ORDERED]);
+      const statuses = container.map((v) => {
+        switch (v[index.STATUS]) {
+          case status.REMOVED: {
+            return [status.REMOVED];
+          }
+          case status.DELIMITED: {
+            return [status.DELIMITED];
+          }
+          default: {
+            return [status.ORDERED];
+          }
+        }
+      });
       sheet.getRange(
         startRowNum,
         5,
@@ -213,7 +229,7 @@ function doPost(e) {
       const payload = createMessagePayload(mdText);
       return createPublicTextOutput(payload);
     }
-    case 'reset': {
+    case 'reset': { // すでにシャッフルされたエントリの状態をシャッフルされていない状態に戻す
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -227,7 +243,19 @@ function doPost(e) {
 
         container.push(entries[i]);
       }
-      const values = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.UNORDERED]);
+      const values = container.map((v) => {
+        switch (v[index.STATUS]) {
+          case status.REMOVED: {
+            return [status.REMOVED];
+          }
+          case status.DELIMITED: {
+            return [status.DELIMITED];
+          }
+          default: {
+            return [status.UNORDERED];
+          }
+        }
+      });
       sheet.getRange(
         startRowNum,
         5,
@@ -236,6 +264,27 @@ function doPost(e) {
       ).setValues([...values]);
 
       return ContentService.createTextOutput(messages.reset_order);
+    }
+    case 'delimit': {
+      const entries = sheet.getRange(
+        startRowNum,
+        5,
+        maxRowSize,
+        1,
+      ).getValues();
+
+      for (let i = 0; i < maxRowSize; i++) {
+        if (!entries[i][0]) break;
+        if (entries[i][0] !== status.ORDERED) continue;
+
+        sheet.getRange(
+          startRowNum + i,
+          5,
+          1,
+        ).setValues(status.DELIMITED)
+      }
+
+      return ContentService.createTextOutput(messages.delimit_time);
     }
     default:
       return ContentService.createTextOutput(cmd + "\n" + help);
@@ -264,6 +313,7 @@ function makeMarkdown(container, status, index) {
     const ary = container[num];
 
     if (ary[index.STATUS] === status.REMOVED) continue;
+    if (ary[index.STATUS] === status.DELIMITED) continue;
 
     mdTable += `| ${ary[index.TITLE]} | | | ${ary[index.NAME]} |\n`;
     mdList += `- ${ary[index.TITLE]} by ${ary[index.NAME]}\n`;
