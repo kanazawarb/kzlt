@@ -144,6 +144,7 @@ function doPost(e) {
       for (let i = 0; i < maxRowSize; i++) {
         if (!entries[i][index.DATE]) break;
         if (entries[i][index.STATUS] !== status.UNORDERED) continue;
+        if (entries[i][index.STATUS] !== status.DELIMITED) continue;
 
         const name = entries[i][index.NAME];
         const title = entries[i][index.TITLE];
@@ -173,7 +174,7 @@ function doPost(e) {
         if (entries[i][index.STATUS] === status.REMOVED) continue
 
         const entry = entries[i];
-        const badge = entry[index.STATUS] === status.ORDERED ? '[done]' : '';
+        const badge = (entry[index.STATUS] === status.ORDERED || entry[index.STATUS] === status.DELIMITED) ? '[done]' : '';
         allText += `- ${badge} ${entry[index.TITLE]} by ${entry[index.NAME]}, entryId: ${startRowNum + i}\n`;
       }
 
@@ -202,7 +203,19 @@ function doPost(e) {
       }
 
       // 並び替え対象としたものに印をつける
-      const statuses = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.ORDERED]);
+      const statuses = container.map((v) => {
+        switch (v[index.STATUS]) {
+          case status.REMOVED: {
+            return [status.REMOVED];
+          }
+          case status.DELIMITED: {
+            return [status.DELIMITED];
+          }
+          default: {
+            return [status.ORDERED];
+          }
+        }
+      });
       sheet.getRange(
         startRowNum,
         5,
@@ -300,6 +313,7 @@ function makeMarkdown(container, status, index) {
     const ary = container[num];
 
     if (ary[index.STATUS] === status.REMOVED) continue;
+    if (ary[index.STATUS] === status.DELIMITED) continue;
 
     mdTable += `| ${ary[index.TITLE]} | | | ${ary[index.NAME]} |\n`;
     mdList += `- ${ary[index.TITLE]} by ${ary[index.NAME]}\n`;
