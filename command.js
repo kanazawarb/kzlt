@@ -17,6 +17,8 @@ function doPost(e) {
 /kzlt shuffle -- 順番を決め、channelに出力する (次のshuffleに出てこない)
 /kzlt reset -- 順番決めたものすべてを順番決めていないことにする
 /kzlt remove 'エントリ番号' -- エントリ時に返ってきた番号を指定してエントリを削除する
+/kzlt delimit -- 一旦区切ってすでに順番を決めたエントリをshuffle対象外とする
+※ delimit 後に shuffle することで、前回 shuffle 後にエントリしたものだけで shuffle できます
 `;
 
   const argText = e.parameter.text;
@@ -35,12 +37,13 @@ function doPost(e) {
   const startRowNum = 2;
   const startColNum = 2;
   const maxRowSize = 100; // TODO: さぽって 100 行に限定してる
-  const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed', FINISHED: 'finished' };
+  const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed', DELIMITED: 'delimited' };
   const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
   const messages = {
     no_entry: "エントリーはありません",
     reset_order: "すべてのエントリーを順番を決めてない状態に戻しました",
     full_entry: "満席です",
+    delimit_time: "ここまで順番を決めたエントリは発表済みとみなします"
   }
 
   // なければ sheet を作る
@@ -236,6 +239,27 @@ function doPost(e) {
       ).setValues([...values]);
 
       return ContentService.createTextOutput(messages.reset_order);
+    }
+    case 'delimit': {
+      const entries = sheet.getRange(
+        startRowNum,
+        5,
+        maxRowSize,
+        1,
+      ).getValues();
+
+      for (let i = 0; i < maxRowSize; i++) {
+        if (!entries[i][0]) break;
+        if (entries[i][0] !== status.ORDERED) continue;
+
+        sheet.getRange(
+          startRowNum + i,
+          5,
+          1,
+        ).setValues(status.DELIMITED)
+      }
+
+      return ContentService.createTextOutput(messages.delimit_time);
     }
     default:
       return ContentService.createTextOutput(cmd + "\n" + help);
