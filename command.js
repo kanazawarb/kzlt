@@ -230,7 +230,19 @@ function doPost(e) {
 
         container.push(entries[i]);
       }
-      const values = container.map((v) => v[index.STATUS] === status.REMOVED ? [status.REMOVED] : [status.UNORDERED]);
+      const values = container.map((v) => {
+        switch (v[index.STATUS]) {
+          case status.REMOVED: {
+            return [status.REMOVED];
+          }
+          case status.DELIMITED: {
+            return [status.DELIMITED];
+          }
+          default: {
+            return [status.UNORDERED];
+          }
+        }
+      });
       sheet.getRange(
         startRowNum,
         5,
