@@ -35,7 +35,7 @@ function doPost(e) {
   const startRowNum = 2;
   const startColNum = 2;
   const maxRowSize = 100; // TODO: さぽって 100 行に限定してる
-  const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed' };
+  const status = { ORDERED: 'ordered', UNORDERED: 'unordered', REMOVED: 'removed', FINISHED: 'finished' };
   const index = { DATE: 0, NAME: 1, TITLE: 2, STATUS: 3 };
   const messages = {
     no_entry: "エントリーはありません",
@@ -50,7 +50,7 @@ function doPost(e) {
   }(sheetName);
 
   switch (cmd) {
-    case 'entry': {
+    case 'entry': { // エントリする
       const current = new Date().toLocaleString();
       const userName = e.parameter.user_name;
       const title = argText.slice(idx + 1, argText.length).trim();
@@ -80,7 +80,7 @@ function doPost(e) {
       }
       return ContentService.createTextOutput(messages.full_entry);
     }
-    case 'remove': {
+    case 'remove': { // 番号指定でエントリを削除扱いにする
       const entryId = argText.slice(idx + 1, argText.length).trim();
       if (Number(entryId) === 0 || Number.isNaN === Number(entryId) || typeof (Number(entryId)) !== 'number') {
         return ContentService.createTextOutput('entry 時に返ってきた entryId を指定してください /kzlt remove 1');
@@ -99,7 +99,7 @@ function doPost(e) {
       );
       return createPublicTextOutput(payload);
     }
-    case 'my': {
+    case 'my': { // 自分がエントリしたものを出力する
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -128,7 +128,7 @@ function doPost(e) {
       }
     }
 
-    case 'list': {
+    case 'list': { // shuffle されていないエントリを出力する
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -156,7 +156,7 @@ function doPost(e) {
         return createPublicTextOutput(payload);
       }
     }
-    case 'all': {
+    case 'all': { // 削除扱いのエントリ以外すべてを出力する
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -178,7 +178,7 @@ function doPost(e) {
 
       return ContentService.createTextOutput(allText);
     }
-    case 'shuffle': {
+    case 'shuffle': { // shuffle されていないエントリをシャッフルする
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
@@ -213,7 +213,7 @@ function doPost(e) {
       const payload = createMessagePayload(mdText);
       return createPublicTextOutput(payload);
     }
-    case 'reset': {
+    case 'reset': { // すでにシャッフルされたエントリの状態をシャッフルされていない状態に戻す
       const entries = sheet.getRange(
         startRowNum,
         startColNum,
