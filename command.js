@@ -280,10 +280,11 @@ function doPost(e) {
           startRowNum + i,
           5,
           1,
-        ).setValues(status.DELIMITED)
+        ).setValue(status.DELIMITED)
       }
 
-      return ContentService.createTextOutput(messages.delimit_time);
+      const payload = createMessagePayload(messages.delimit_time);
+      return createPublicTextOutput(payload);
     }
     default:
       return ContentService.createTextOutput(cmd + "\n" + help);
