@@ -280,7 +280,7 @@ function doPost(e) {
           startRowNum + i,
           5,
           1,
-        ).setValues(status.DELIMITED)
+        ).setValue(status.DELIMITED)
       }
 
       return ContentService.createTextOutput(messages.delimit_time);
