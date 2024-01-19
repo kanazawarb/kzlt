@@ -144,7 +144,6 @@ function doPost(e) {
       for (let i = 0; i < maxRowSize; i++) {
         if (!entries[i][index.DATE]) break;
         if (entries[i][index.STATUS] !== status.UNORDERED) continue;
-        if (entries[i][index.STATUS] !== status.DELIMITED) continue;
 
         const name = entries[i][index.NAME];
         const title = entries[i][index.TITLE];
