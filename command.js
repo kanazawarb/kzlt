@@ -222,6 +222,8 @@ function doPost(e) {
         1,
       ).setValues([...statuses]);
 
+      // シャッフルした番号の配列をつくる
+      const orderNumbers = indexesNumbers(container.length);
       // markdown を作り、レスポンスを返す
       const mdText = makeMarkdown(container, status, index);
 
@@ -304,9 +306,8 @@ function indexesNumbers(num = 10) {
   return shuffle(nums);
 }
 
-function makeMarkdown(container, status, index) {
-  const orderNumbers = indexesNumbers(container.length);
-
+function makeMarkdown(orderNumbers, status, index) {
+  let count = 0;
   let mdTable = "```\n"; // | タイトル | 時刻	 | 時間	 | 担当 |
   let mdList = "";
   for (const num of orderNumbers) {
@@ -314,9 +315,14 @@ function makeMarkdown(container, status, index) {
 
     if (ary[index.STATUS] === status.REMOVED) continue;
     if (ary[index.STATUS] === status.DELIMITED) continue;
+    count++;
 
     mdTable += `| ${ary[index.TITLE]} | | | ${ary[index.NAME]} |\n`;
     mdList += `- ${ary[index.TITLE]} by ${ary[index.NAME]}\n`;
+    if (count % 4 === 0) {
+      mdTable += `| 休憩 | | | |\n`;
+      mdList += `- 【休憩】`;
+    }
   };
   mdTable += "```";
 
