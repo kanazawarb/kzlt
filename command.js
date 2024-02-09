@@ -74,6 +74,7 @@ function doPost(e) {
             1,
             entryLine.length,
           ).setValues([entryLine]);
+          SpreadsheetApp.flush()
 
           const payload = createMessagePayload(
             `${userName} さんから LT: 「${title}」のエントリがありました。entryId: ${startRowNum + row}`
@@ -81,6 +82,7 @@ function doPost(e) {
           return createPublicTextOutput(payload);
         }
       }
+
       return ContentService.createTextOutput(messages.full_entry);
     }
     case 'remove': { // 番号指定でエントリを削除扱いにする
@@ -221,6 +223,7 @@ function doPost(e) {
         container.length,
         1,
       ).setValues([...statuses]);
+      SpreadsheetApp.flush()
 
       // シャッフルした番号の配列をつくる
       const orderNumbers = indexesNumbers(container.length);
@@ -263,6 +266,7 @@ function doPost(e) {
         container.length,
         1,
       ).setValues([...values]);
+      SpreadsheetApp.flush()
 
       return ContentService.createTextOutput(messages.reset_order);
     }
@@ -284,6 +288,7 @@ function doPost(e) {
           1,
         ).setValue(status.DELIMITED)
       }
+      SpreadsheetApp.flush()
 
       const payload = createMessagePayload(messages.delimit_time);
       return createPublicTextOutput(payload);
