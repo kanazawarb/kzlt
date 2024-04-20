@@ -228,7 +228,7 @@ function doPost(e) {
       // シャッフルした番号の配列をつくる
       const orderNumbers = indexesNumbers(container.length);
       // markdown を作り、レスポンスを返す
-      const mdText = makeMarkdown(container, status, index);
+      const mdText = makeMarkdown(orderNumbers, container, status, index);
 
       const payload = createMessagePayload(mdText);
       return createPublicTextOutput(payload);
@@ -311,7 +311,7 @@ function indexesNumbers(num = 10) {
   return shuffle(nums);
 }
 
-function makeMarkdown(orderNumbers, status, index) {
+function makeMarkdown(orderNumbers, container, status, index) {
   let count = 0;
   let mdTable = "```\n"; // | タイトル | 時刻	 | 時間	 | 担当 |
   let mdList = "";
