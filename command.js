@@ -52,7 +52,7 @@ function doPost(e) {
     return targetSheet ? targetSheet : spreadsheet.insertSheet(name);
   }(sheetName);
 
-  Logger.log({ cmd: cmd, user_name: e.parameter.user_name });
+  console.log({ cmd: cmd, user_name: e.parameter.user_name });
 
   switch (cmd) {
     case 'entry': { // エントリする
@@ -78,7 +78,7 @@ function doPost(e) {
           ).setValues([entryLine]);
           SpreadsheetApp.flush()
 
-          Logger.log({ cmd: cmd, user_name: e.parameter.user_name, title: title, argText: argText });
+          console.log({ cmd: cmd, user_name: e.parameter.user_name, title: title, argText: argText });
 
           const payload = createMessagePayload(
             `${userName} さんから LT: 「${title}」のエントリがありました。entryId: ${startRowNum + row}`
@@ -103,7 +103,7 @@ function doPost(e) {
 
       sheet.getRange(targetRowNum, startColNum + index.STATUS).setValue(status.REMOVED);
 
-      Logger.log({ cmd: cmd, user_name: e.parameter.user_name, entryId: entryId });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name, entryId: entryId });
 
       const payload = createMessagePayload(
         `LT title: ${entry[index.TITLE]} のエントリが取り消されました。`
@@ -134,7 +134,7 @@ function doPost(e) {
 
       if (entryCount === 0) text = messages.no_entry;
 
-      Logger.log({ cmd: cmd, user_name: e.parameter.user_name, text: text });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name, text: text });
 
       return ContentService.createTextOutput(text);
     }
@@ -159,7 +159,7 @@ function doPost(e) {
         entryCount++;
       }
 
-      Logger.log({ cmd: cmd, user_name: e.parameter.user_name });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name });
 
       if (entryCount === 0) {
         return ContentService.createTextOutput(messages.no_entry);
@@ -189,7 +189,7 @@ function doPost(e) {
 
       if (!allText) allText = messages.no_entry;
 
-      Logger.log({ cmd: cmd, user_name: e.parameter.user_name, text: allText });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name, text: allText });
 
       return ContentService.createTextOutput(allText);
     }
@@ -240,7 +240,7 @@ function doPost(e) {
       // markdown を作り、レスポンスを返す
       const mdText = makeMarkdown(orderNumbers, container, status, index);
 
-      Logger.log({ cmd: cmd, user_name: e.parameter.user_name, text: mdText });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name, text: mdText });
 
       const payload = createMessagePayload(mdText);
       return createPublicTextOutput(payload);
@@ -280,7 +280,7 @@ function doPost(e) {
       ).setValues([...values]);
       SpreadsheetApp.flush()
 
-      Logger.log({ cmd: cmd, user_name: e.parameter.user_name, text: message.reset_order });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name, text: message.reset_order });
 
       return ContentService.createTextOutput(messages.reset_order);
     }
@@ -304,13 +304,13 @@ function doPost(e) {
       }
       SpreadsheetApp.flush()
 
-      Logger.log({ cmd: cmd, user_name: e.parameter.user_name, text: message.delimit_time });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name, text: message.delimit_time });
 
       const payload = createMessagePayload(messages.delimit_time);
       return createPublicTextOutput(payload);
     }
     default:
-      Logger.log({ cmd: cmd, user_name: e.parameter.user_name });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name });
 
       return ContentService.createTextOutput(cmd + "\n" + help);
   }
