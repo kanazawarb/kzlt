@@ -304,7 +304,7 @@ function doPost(e) {
       }
       SpreadsheetApp.flush()
 
-      console.log({ cmd: cmd, user_name: e.parameter.user_name, text: message.delimit_time });
+      console.log({ cmd: cmd, user_name: e.parameter.user_name, text: messages.delimit_time });
 
       const payload = createMessagePayload(messages.delimit_time);
       return createPublicTextOutput(payload);
