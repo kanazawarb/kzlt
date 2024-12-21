@@ -8,6 +8,7 @@ on:
       - .github/workflows/cd.yml
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy_job:
